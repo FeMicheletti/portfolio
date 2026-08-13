@@ -1,10 +1,6 @@
-import { BriefcaseBusiness, Edit3, Eye, EyeOff, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
-import { deleteExperienceAction, toggleExperienceVisibilityAction } from "@/app/admin/(protected)/carreira/actions";
-import { ExperienceForm } from "@/components/admin/experience-form";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
+import { BriefcaseBusiness, Edit3, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ExperienceDeleteButton } from "@/components/admin/experience-delete-button";

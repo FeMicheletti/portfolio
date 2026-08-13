@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { FloatingHeader } from "@/components/public/floating-header";
 import heroBackground from "@/assets/background.png";
 import { ArrowUpRight, Download, BriefcaseBusiness, CheckCircle2, Code2, ContactRound, GitBranch, Mail, MapPin, MessageCircle, Sparkles } from "lucide-react";
@@ -37,6 +38,7 @@ const copy = {
 		featured: "Destaque",
 		viewDemo: "Ver projeto",
 		viewCode: "Código",
+		viewCase: "Ver case completo",
 		noProjects: "Os primeiros cases serão publicados em breve.",
 		stacksEyebrow: "Tecnologias",
 		stacksTitle: "Ferramentas escolhidas para cada desafio",
@@ -75,6 +77,7 @@ const copy = {
 		featured: "Featured",
 		viewDemo: "View project",
 		viewCode: "Code",
+		viewCase: "View full case",
 		noProjects: "The first case studies will be published soon.",
 		stacksEyebrow: "Technologies",
 		stacksTitle: "Tools chosen for each challenge",
@@ -216,8 +219,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 	const githubUrl = settings?.githubUrl || "https://github.com/FeMicheletti";
 	const linkedinUrl = settings?.linkedinUrl || "https://www.linkedin.com/in/felipe-micheletti";
 	const heroTitle = (locale === "PT_BR" ? settings?.heroTitlePt : settings?.heroTitleEn) || content.heroRole;
-	const heroSubtitle = locale === "PT_BR" ? settings?.heroSubtitlePt : settings?.heroSubtitleEn;
-	const availability = locale === "PT_BR" ? settings?.availabilityPt : settings?.availabilityEn;
 	const heroImage = settings?.heroMediaId ? `/api/media/${settings.heroMediaId}` : heroBackground;
 
 	const mainTechnologies = categories
@@ -411,6 +412,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 														</span>
 													))}
 												</div>
+												<Link href={`/projetos/${project.slug}${locale === "EN_US" ? "?lang=en" : ""}`} className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-violet-300 hover:text-violet-200">{content.viewCase}<ArrowUpRight className="size-4" /></Link>
 												{project.demoUrl || project.repositoryUrl ? (
 													<div className="mt-6 flex flex-wrap gap-3">
 														{project.demoUrl ? (
@@ -507,6 +509,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 			<footer className="relative border-t border-white/5 py-7">
 				<div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
 					<p>© {new Date().getFullYear()} Felipe Micheletti. Full Stack Developer</p>
+					<Link href="/privacidade" className="hover:text-zinc-300">Privacidade e analytics</Link>
 				</div>
 			</footer>
 		</div>

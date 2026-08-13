@@ -2,14 +2,12 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { AlertCircle, CheckCircle2, FileText, ImageIcon, Loader2, Save, UserRoundCog } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Loader2, Save, UserRoundCog } from "lucide-react";
 import { updateSiteSettingsAction } from "@/app/admin/(protected)/configuracoes/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import type { SiteSettingsFormState, SiteSettingsFormValues } from "@/lib/settings/settings-form";
 
 type MediaOption = {

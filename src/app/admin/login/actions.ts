@@ -2,9 +2,11 @@
 
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createAdminSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { checkLoginRateLimit, clearLoginRateLimit, loginRateLimitKey, registerFailedLogin } from "@/lib/auth/rate-limit";
 
 const loginSchema = z.object({
 	email: z.string().trim().email(),
@@ -22,6 +24,10 @@ export async function loginAction(_previousState: LoginActionState, formData: Fo
 	});
 
 	if (!parsed.success) return { error: "Informe um e-mail e uma senha válidos." };
+	const requestHeaders = await headers();
+	const address = requestHeaders.get("cf-connecting-ip") ?? requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+	const rateLimitKey = loginRateLimitKey(parsed.data.email, address);
+	if (await checkLoginRateLimit(rateLimitKey)) return { error: "Muitas tentativas. Aguarde 15 minutos e tente novamente." };
 
 	const admin = await prisma.adminUser.findUnique({
 		where: { email: parsed.data.email.toLowerCase() },
@@ -29,8 +35,12 @@ export async function loginAction(_previousState: LoginActionState, formData: Fo
 
 	const passwordMatches = admin ? await bcrypt.compare(parsed.data.password, admin.passwordHash) : false;
 
-	if (!admin || !admin.active || !passwordMatches) return { error: "E-mail ou senha inválidos." };
+	if (!admin || !admin.active || !passwordMatches) {
+		await registerFailedLogin(rateLimitKey);
+		return { error: "E-mail ou senha inválidos." };
+	}
 
+	await clearLoginRateLimit(rateLimitKey);
 	await createAdminSession(admin.id);
 	redirect("/admin");
 }

@@ -1,7 +1,8 @@
 export const analyticsEventTypes = [
   "PAGE_VIEW",
   "RESUME_DOWNLOAD",
-  "PROJECT_VIEW",
+	"PROJECT_VIEW",
+	"PROJECT_DETAIL_VIEW",
   "PROJECT_DEMO_CLICK",
   "PROJECT_GITHUB_CLICK",
   "GITHUB_CLICK",

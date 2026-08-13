@@ -12,6 +12,7 @@ function hashSessionToken(token: string) {
 }
 
 export async function createAdminSession(userId: string) {
+	await prisma.adminSession.deleteMany({ where: { expiresAt: { lte: new Date() } } });
 	const token = randomBytes(32).toString("hex");
 	const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 

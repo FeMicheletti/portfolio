@@ -156,7 +156,7 @@ export default async function AdminPage() {
 								</span>
 								<p className="font-medium text-zinc-200">Nenhum projeto cadastrado</p>
 								<p className="mt-1 max-w-sm text-sm leading-6 text-zinc-500">
-									A gestão de projetos será a próxima funcionalidade do painel.
+									Cadastre seu primeiro projeto para começar a preencher o portfólio.
 								</p>
 							</div>
 						)}

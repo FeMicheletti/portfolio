@@ -14,6 +14,7 @@ import {
   type AnalyticsEventDetails,
   type AnalyticsEventName,
 } from "@/lib/analytics/types";
+import { ANALYTICS_DISABLED_KEY } from "@/components/public/privacy-controls";
 
 type Locale = "PT_BR" | "EN_US";
 type Attribution = {
@@ -126,8 +127,9 @@ export function AnalyticsProvider({
     [],
   );
 
-  const track = useCallback(
-    (eventType: AnalyticsEventName, details: AnalyticsEventDetails = {}) => {
+	const track = useCallback(
+		(eventType: AnalyticsEventName, details: AnalyticsEventDetails = {}) => {
+			if (localStorage.getItem(ANALYTICS_DISABLED_KEY) === "1") return;
       const payload = JSON.stringify({
         eventType,
         visitorId: getVisitorId(),

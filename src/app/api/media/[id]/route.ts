@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { oneDriveContentUrl } from "@/lib/onedrive/client";
+import { safeDownloadFileName } from "@/lib/media";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> },) {
 	const { id } = await params;
@@ -21,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 	const upstream = await fetch(contentUrl, { cache: "no-store" });
 	if (!upstream.ok || !upstream.body) return new Response("Não foi possível carregar a mídia.", { status: upstream.status || 502 });
 
-	const downloadFileName = requestedFileName || media.fileName;
+	const downloadFileName = safeDownloadFileName(requestedFileName, media.fileName);
 
 	const headers = new Headers({
 		"Content-Type": upstream.headers.get("content-type") || media.mimeType,

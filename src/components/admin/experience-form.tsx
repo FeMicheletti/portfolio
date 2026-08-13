@@ -52,7 +52,6 @@ function TranslationFields({ locale, formId, values, state, onChange }: { locale
 export function ExperienceForm({ id, values }: { id?: string; values?: ExperienceFormValues }) {
 	const action = id ? updateExperienceAction.bind(null, id) : createExperienceAction;
 	const [state, formAction, pending] = useActionState(action, initialState);
-	const editing = Boolean(id);
 	const formId = id ?? "new";
 
 	const [formValues, setFormValues] = useState<ExperienceFormValues>(() => ({

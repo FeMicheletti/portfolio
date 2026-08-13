@@ -110,6 +110,7 @@ export async function getAnalyticsDashboard(period: AnalyticsPeriod) {
         repositories: 0,
       };
       if (event.eventType === "PROJECT_VIEW") current.views += 1;
+	  if (event.eventType === "PROJECT_DETAIL_VIEW") current.views += 1;
       if (event.eventType === "PROJECT_DEMO_CLICK") current.demos += 1;
       if (event.eventType === "PROJECT_GITHUB_CLICK") current.repositories += 1;
       projects.set(event.projectId, current);

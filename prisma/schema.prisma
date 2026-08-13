@@ -37,6 +37,7 @@ enum AnalyticsEventType {
 	PAGE_VIEW
 	RESUME_DOWNLOAD
 	PROJECT_VIEW
+	PROJECT_DETAIL_VIEW
 	PROJECT_DEMO_CLICK
 	PROJECT_GITHUB_CLICK
 	GITHUB_CLICK
@@ -76,6 +77,16 @@ model AdminSession {
 
 	@@index([userId])
 	@@index([expiresAt])
+}
+
+model LoginRateLimit {
+	key          String    @id @db.Char(64)
+	attempts     Int       @default(0)
+	windowStart  DateTime  @default(now())
+	blockedUntil DateTime?
+	updatedAt    DateTime  @updatedAt
+
+	@@index([updatedAt])
 }
 
 model Project {
