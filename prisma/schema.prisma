@@ -1,0 +1,286 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+	provider   = "prisma-client-js"
+	engineType = "library"
+}
+
+datasource db {
+	provider = "mysql"
+}
+
+enum Locale {
+	PT_BR
+	EN_US
+}
+
+enum ProjectStatus {
+	DRAFT
+	PUBLISHED
+	ARCHIVED
+}
+
+enum MediaKind {
+	IMAGE
+	PDF
+}
+
+enum ProjectMediaRole {
+	COVER
+	GALLERY
+}
+
+enum AnalyticsEventType {
+	PAGE_VIEW
+	RESUME_DOWNLOAD
+	PROJECT_VIEW
+	PROJECT_DEMO_CLICK
+	PROJECT_GITHUB_CLICK
+	GITHUB_CLICK
+	LINKEDIN_CLICK
+	EMAIL_CLICK
+	LANGUAGE_CHANGE
+	WHATSAPP_CLICK
+}
+
+enum DeviceType {
+	DESKTOP
+	MOBILE
+	TABLET
+	BOT
+	UNKNOWN
+}
+
+model AdminUser {
+	id           String         @id @default(cuid())
+	name         String         @db.VarChar(120)
+	email        String         @unique @db.VarChar(191)
+	passwordHash String         @db.VarChar(255)
+	active       Boolean        @default(true)
+	sessions     AdminSession[]
+	createdAt    DateTime       @default(now())
+	updatedAt    DateTime       @updatedAt
+}
+
+model AdminSession {
+	id         String    @id @default(cuid())
+	tokenHash  String    @unique @db.Char(64)
+	userId     String
+	user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+	expiresAt  DateTime
+	lastUsedAt DateTime  @default(now())
+	createdAt  DateTime  @default(now())
+
+	@@index([userId])
+	@@index([expiresAt])
+}
+
+model Project {
+	id              String               @id @default(cuid())
+	slug            String               @unique @db.VarChar(191)
+	status          ProjectStatus        @default(DRAFT)
+	featured        Boolean              @default(false)
+	sortOrder       Int                  @default(0)
+	repositoryUrl   String?              @db.VarChar(1000)
+	demoUrl         String?              @db.VarChar(1000)
+	startedAt       DateTime?            @db.Date
+	finishedAt      DateTime?            @db.Date
+	publishedAt     DateTime?
+	translations    ProjectTranslation[]
+	technologies    ProjectTechnology[]
+	media           ProjectMedia[]
+	analyticsEvents AnalyticsEvent[]
+	createdAt       DateTime             @default(now())
+	updatedAt       DateTime             @updatedAt
+
+	@@index([status, sortOrder])
+	@@index([featured, status])
+}
+
+model ProjectTranslation {
+	id               String  @id @default(cuid())
+	projectId        String
+	project          Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+	locale           Locale
+	title            String  @db.VarChar(191)
+	summary          String  @db.Text
+	problem          String? @db.Text
+	solution         String? @db.Text
+	responsibilities String? @db.Text
+	technicalChoices String? @db.Text
+	results          String? @db.Text
+
+	@@unique([projectId, locale])
+	@@index([locale])
+}
+
+model TechnologyCategory {
+	id           String       @id @default(cuid())
+	slug         String       @unique @db.VarChar(100)
+	namePt       String       @db.VarChar(100)
+	nameEn       String       @db.VarChar(100)
+	sortOrder    Int          @default(0)
+	visible      Boolean      @default(true)
+	technologies Technology[]
+	createdAt    DateTime     @default(now())
+	updatedAt    DateTime     @updatedAt
+
+	@@index([visible, sortOrder])
+}
+
+model Technology {
+	id            String              @id @default(cuid())
+	categoryId    String
+	category      TechnologyCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+	name          String              @db.VarChar(100)
+	slug          String              @unique @db.VarChar(100)
+	iconKey       String?             @db.VarChar(100)
+	color         String?             @db.VarChar(20)
+	descriptionPt String?             @db.VarChar(500)
+	descriptionEn String?             @db.VarChar(500)
+	visible       Boolean             @default(true)
+	sortOrder     Int                 @default(0)
+	projects      ProjectTechnology[]
+	createdAt     DateTime            @default(now())
+	updatedAt     DateTime            @updatedAt
+
+	@@index([categoryId, visible, sortOrder])
+}
+
+model Experience {
+	id           String                  @id @default(cuid())
+	company      String                  @db.VarChar(191)
+	location     String?                 @db.VarChar(191)
+	companyUrl   String?                 @db.VarChar(1000)
+	startedAt    DateTime                @db.Date
+	finishedAt   DateTime?               @db.Date
+	current      Boolean                 @default(false)
+	visible      Boolean                 @default(true)
+	sortOrder    Int                     @default(0)
+	translations ExperienceTranslation[]
+	createdAt    DateTime                @default(now())
+	updatedAt    DateTime                @updatedAt
+	@@index([visible, sortOrder, startedAt])
+}
+
+model ExperienceTranslation {
+	id           String     @id @default(cuid())
+	experienceId String
+	experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+	locale       Locale
+	title        String     @db.VarChar(191)
+	summary      String     @db.VarChar(500)
+	description  String     @db.Text
+	@@unique([experienceId, locale])
+	@@index([locale])
+}
+
+model ProjectTechnology {
+	projectId    String
+	technologyId String
+	sortOrder    Int        @default(0)
+	project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+	technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+	@@id([projectId, technologyId])
+	@@index([technologyId])
+}
+
+model MediaAsset {
+	id           String         @id @default(cuid())
+	driveItemId  String         @unique @db.VarChar(191)
+	drivePath    String         @db.VarChar(1000)
+	fileName     String         @db.VarChar(255)
+	mimeType     String         @db.VarChar(100)
+	kind         MediaKind
+	sizeBytes    Int
+	width        Int?
+	height       Int?
+	checksum     String?        @db.VarChar(128)
+	projectMedia ProjectMedia[]
+	resumes      Resume[]
+	heroSettings SiteSettings[] @relation("HeroMedia")
+	createdAt    DateTime       @default(now())
+	updatedAt    DateTime       @updatedAt
+}
+
+model ProjectMedia {
+	id        String           @id @default(cuid())
+	projectId String
+	mediaId   String
+	role      ProjectMediaRole @default(GALLERY)
+	sortOrder Int              @default(0)
+	altPt     String?          @db.VarChar(255)
+	altEn     String?          @db.VarChar(255)
+	project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+	media     MediaAsset       @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+	@@unique([projectId, mediaId])
+	@@index([projectId, role, sortOrder])
+	@@index([mediaId])
+}
+
+model Resume {
+	id        String     @id @default(cuid())
+	locale    Locale     @unique
+	label     String     @db.VarChar(120)
+	mediaId   String
+	media     MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+	createdAt DateTime   @default(now())
+	updatedAt DateTime   @updatedAt
+
+	@@index([mediaId])
+}
+
+model SiteSettings {
+	id               String      @id @default("main") @db.VarChar(32)
+	contactEmail     String      @db.VarChar(191)
+	githubUrl        String      @db.VarChar(1000)
+	linkedinUrl      String      @db.VarChar(1000)
+	whatsappUrl      String?     @db.VarChar(1000)
+	location         String      @default("Rio de Janeiro, Brazil") @db.VarChar(120)
+	timezone         String      @default("America/Sao_Paulo") @db.VarChar(64)
+	availableForWork Boolean     @default(true)
+	availabilityPt   String?     @db.VarChar(255)
+	availabilityEn   String?     @db.VarChar(255)
+	heroTitlePt      String?     @db.VarChar(255)
+	heroTitleEn      String?     @db.VarChar(255)
+	heroSubtitlePt   String?     @db.VarChar(500)
+	heroSubtitleEn   String?     @db.VarChar(500)
+	heroMediaId      String?
+	heroMedia        MediaAsset? @relation("HeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+	createdAt        DateTime    @default(now())
+	updatedAt        DateTime    @updatedAt
+
+	@@index([heroMediaId])
+}
+
+model AnalyticsEvent {
+	id           String             @id @default(cuid())
+	eventType    AnalyticsEventType
+	visitorId    String             @db.VarChar(64)
+	sessionId    String             @db.VarChar(64)
+	path         String             @db.VarChar(500)
+	locale       Locale
+	projectId    String?
+	project      Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+	targetUrl    String?            @db.VarChar(1000)
+	referrerHost String?            @db.VarChar(255)
+	utmSource    String?            @db.VarChar(191)
+	utmMedium    String?            @db.VarChar(191)
+	utmCampaign  String?            @db.VarChar(191)
+	countryCode  String?            @db.Char(2)
+	city         String?            @db.VarChar(120)
+	deviceType   DeviceType         @default(UNKNOWN)
+	metadata     Json?
+	createdAt    DateTime           @default(now())
+
+	@@index([eventType, createdAt])
+	@@index([visitorId, createdAt])
+	@@index([sessionId, createdAt])
+	@@index([projectId, createdAt])
+	@@index([createdAt])
+}
