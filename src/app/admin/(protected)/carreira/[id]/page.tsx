@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ExperienceForm, ExperienceFormHeading } from "@/components/admin/experience-form";
 import { ExperienceFormValues } from "@/lib/experiences/experience-form";
-import { ExperienceTranslation } from "@prisma/client";
 
 function dateInputValue(date: Date | null) {
     return date?.toISOString().slice(0, 10) ?? "";
@@ -21,8 +20,8 @@ export default async function EditExperience({ params }: { params: Promise<{ id:
 
     if (!experience) notFound();
 
-    const pt = experience.translations.find((translation: ExperienceTranslation) => translation.locale === "PT_BR");
-    const en = experience.translations.find((translation: ExperienceTranslation) => translation.locale === "EN_US");
+    const pt = experience.translations.find((translation) => translation.locale === "PT_BR");
+    const en = experience.translations.find((translation) => translation.locale === "EN_US");
 
     const values: ExperienceFormValues = {
         company: experience?.company ?? "",
