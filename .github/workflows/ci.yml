@@ -27,6 +27,8 @@ jobs:
               run: npm ci
             - name: Generate Prisma Client
               run: npx prisma generate
+            - name: Generate Next.js types
+              run: npx next typegen
             - name: Lint
               run: npm run lint
             - name: Typecheck
