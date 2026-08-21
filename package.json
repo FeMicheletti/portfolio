@@ -11,7 +11,8 @@
         "start": "next start -p 3000",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
-        "test": "node --test tests/*.test.mjs",
+        "test": "tsx --test tests/*.test.mjs",
+        "test:coverage": "tsx --test --experimental-test-coverage tests/*.test.mjs",
         "db:studio": "prisma studio",
         "db:migrate": "prisma migrate dev",
         "db:deploy": "prisma migrate deploy",
@@ -56,6 +57,7 @@
         "prettier-plugin-tailwindcss": "^0.8.1",
         "prisma": "^7.9.1",
         "tailwindcss": "^4",
+        "tsx": "^4.23.12",
         "typescript": "^5"
     },
     "overrides": {
