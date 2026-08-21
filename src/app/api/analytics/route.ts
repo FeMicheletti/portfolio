@@ -102,9 +102,9 @@ function clientAddress(request: Request) {
     return "unknown";
 }
 
-function analyticsBucketKey(request: Request, userAgent: string) {
+function analyticsBucketKey(request: Request, userAgent: string, namespace: string) {
     const basis = `${clientAddress(request)}:${userAgent.slice(0, 255) || "unknown"}`;
-    return createHash("sha256").update(`analytics:${analyticsSecret()}:${basis}`).digest("hex");
+    return createHash("sha256").update(`${namespace}:${analyticsSecret()}:${basis}`).digest("hex");
 }
 
 async function consumeAnalyticsLimit(key: string, maxAttempts: number, windowMs: number) {
@@ -195,16 +195,14 @@ export async function POST(request: Request) {
 
     const trustedVisitorId = readSignedCookie(request, VISITOR_COOKIE);
     const trustedSessionId = readSignedCookie(request, SESSION_COOKIE);
-    const bucketKey = analyticsBucketKey(request, userAgent);
+    const sessionBucketKey = analyticsBucketKey(request, userAgent, "analytics-session");
+    const eventBucketKey = analyticsBucketKey(request, userAgent, "analytics-event");
 
-    if (
-        (!trustedVisitorId || !trustedSessionId) &&
-        !(await consumeAnalyticsLimit(`analytics-session:${bucketKey}`, MAX_NEW_SESSIONS_PER_BUCKET, ANALYTICS_WINDOW_MS))
-    ) {
+    if ((!trustedVisitorId || !trustedSessionId) && !(await consumeAnalyticsLimit(sessionBucketKey, MAX_NEW_SESSIONS_PER_BUCKET, ANALYTICS_WINDOW_MS))) {
         return new Response(null, { status: 204 });
     }
 
-    if (!(await consumeAnalyticsLimit(`analytics-event:${bucketKey}`, MAX_EVENTS_PER_BUCKET, ANALYTICS_WINDOW_MS))) {
+    if (!(await consumeAnalyticsLimit(eventBucketKey, MAX_EVENTS_PER_BUCKET, ANALYTICS_WINDOW_MS))) {
         return new Response(null, { status: 204 });
     }
 
