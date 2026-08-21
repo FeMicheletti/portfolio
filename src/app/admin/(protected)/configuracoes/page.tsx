@@ -1,7 +1,6 @@
 import { Settings2 } from "lucide-react";
 import { SiteSettingsForm } from "@/components/admin/site-settings-form";
 import { prisma } from "@/lib/prisma";
-import { $Enums } from "@prisma/client";
 
 export default async function SettingsPage() {
     const [settings, media, resumes] = await Promise.all([
