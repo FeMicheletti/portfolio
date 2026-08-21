@@ -14,9 +14,9 @@ export default async function SettingsPage() {
         prisma.resume.findMany({ select: { locale: true, mediaId: true } }),
     ]);
 
-    const resumeByLocale = new Map<$Enums.Locale, string>( resumes.map((resume) => [ resume.locale, resume.mediaId ]));
-    const images = media.filter((item: { id: string; fileName: string; kind: $Enums.MediaKind; }) => item.kind === "IMAGE");
-    const pdfs = media.filter((item: { id: string; fileName: string; kind: $Enums.MediaKind; }) => item.kind === "PDF");
+    const resumeByLocale = new Map(resumes.map((resume) => [resume.locale, resume.mediaId]));
+    const images = media.filter((item) => item.kind === "IMAGE");
+    const pdfs = media.filter((item) => item.kind === "PDF");
 
     return (
         <div className="space-y-6">

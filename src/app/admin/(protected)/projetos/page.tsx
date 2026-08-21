@@ -7,25 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ProjectArchiveButton } from "@/components/admin/project-archive-button";
 import { ProjectDeleteButton } from "@/components/admin/project-delete-button";
 import { ProjectRestoreButton } from "@/components/admin/project-restore-button";
-import { $Enums, Prisma } from "@prisma/client";
-
-type ProjectWithTranslationsAndCount = Prisma.ProjectGetPayload<{
-    include: {
-        translations: {
-            select: {
-                locale: true;
-                title: true;
-                summary: true;
-            };
-        };
-        _count: {
-            select: {
-                technologies: true;
-                media: true;
-            };
-        };
-    };
-}>;
+import { $Enums } from "@prisma/client";
 
 const statusDetails = {
     DRAFT: {
@@ -51,8 +33,8 @@ export default async function ProjectsPage() {
         },
     });
 
-    const published = projects.filter((project: ProjectWithTranslationsAndCount) => project.status === "PUBLISHED").length;
-    const drafts = projects.filter((project: ProjectWithTranslationsAndCount) => project.status === "DRAFT").length;
+    const published = projects.filter((project) => project.status === "PUBLISHED").length;
+    const drafts = projects.filter((project) => project.status === "DRAFT").length;
 
     return (
         <div className="space-y-6">
@@ -98,9 +80,9 @@ export default async function ProjectsPage() {
                         <span className="text-right">Ações</span>
                     </div>
                     <div className="divide-y divide-white/5">
-                        {projects.map((project: ProjectWithTranslationsAndCount) => {
-                            const pt = project.translations.find((translation: { locale: $Enums.Locale; title: string; summary: string; }) => translation.locale === "PT_BR");
-                            const en = project.translations.find((translation: { locale: $Enums.Locale; title: string; summary: string; }) => translation.locale === "EN_US");
+                        {projects.map((project) => {
+                            const pt = project.translations.find((translation) => translation.locale === "PT_BR");
+                            const en = project.translations.find((translation) => translation.locale === "EN_US");
                             const title = pt?.title ?? en?.title ?? project.slug;
                             const status = statusDetails[project.status];
 

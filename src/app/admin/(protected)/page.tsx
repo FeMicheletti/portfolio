@@ -5,16 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { prisma } from "@/lib/prisma";
 import { $Enums } from "@prisma/client";
 
-type projectInterface = {
-    id: string;
-    updatedAt: Date;
-    slug: string;
-    status: $Enums.ProjectStatus;
-    translations: {
-        title: string;
-    }[];
-}
-
 const statusDetails = {
     DRAFT: {
         label: "Rascunho",
@@ -55,8 +45,8 @@ export default async function AdminPage() {
             },
         }),
     ]);
-    const visitors = new Set(events.map((event: { eventType: $Enums.AnalyticsEventType; visitorId: string; }) => event.visitorId)).size;
-    const downloads = events.filter((event: { eventType: $Enums.AnalyticsEventType; visitorId: string; }) => event.eventType === "RESUME_DOWNLOAD").length;
+    const visitors = new Set(events.map((event) => event.visitorId)).size;
+    const downloads = events.filter((event) => event.eventType === "RESUME_DOWNLOAD").length;
 
     const metrics = [
         {
@@ -133,7 +123,7 @@ export default async function AdminPage() {
                     <CardContent>
                         {recentProjects.length ? (
                             <div className="divide-y divide-white/5">
-                                {recentProjects.map((project: projectInterface) => {
+                                {recentProjects.map((project) => {
                                     const status = statusDetails[project.status];
 
                                     return (

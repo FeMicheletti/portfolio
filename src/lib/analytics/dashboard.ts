@@ -1,25 +1,7 @@
-import { $Enums } from '@prisma/client';
 import { prisma } from "@/lib/prisma";
 
 export const analyticsPeriods = [7, 30, 90] as const;
 export type AnalyticsPeriod = (typeof analyticsPeriods)[number];
-
-interface eventsInterface {
-    createdAt: Date;
-    project: {
-        slug: string;
-        translations: {
-            title: string;
-        }[];
-    } | null;
-    projectId: string | null;
-    eventType: $Enums.AnalyticsEventType;
-    visitorId: string;
-    sessionId: string;
-    referrerHost: string | null;
-    utmSource: string | null;
-    deviceType: $Enums.DeviceType;
-}
 
 const deviceLabels: Record<string, string> = {
     DESKTOP: "Desktop",
@@ -129,9 +111,9 @@ export async function getAnalyticsDashboard(period: AnalyticsPeriod) {
         }
     }
 
-    const count = (eventType: string) => events.filter((event: eventsInterface) => event.eventType === eventType).length;
+    const count = (eventType: string) => events.filter((event) => event.eventType === eventType).length;
     const pageViews = count("PAGE_VIEW");
-    const clicks = events.filter((event: eventsInterface) => interactionEvents.has(event.eventType)).length;
+    const clicks = events.filter((event) => interactionEvents.has(event.eventType)).length;
 
     return {
         period,

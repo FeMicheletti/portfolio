@@ -4,22 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ExperienceDeleteButton } from "@/components/admin/experience-delete-button";
-import { ExperienceTranslation } from "@prisma/client";
-
-interface ExperienceWithTranslations {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    sortOrder: number;
-    startedAt: Date;
-    finishedAt: Date | null;
-    visible: boolean;
-    company: string;
-    location: string | null;
-    companyUrl: string | null;
-    current: boolean;
-    translations: ExperienceTranslation[];
-}
 
 function dateInputValue(date: Date | null) {
     return date ? date.toISOString().slice(0, 10) : "";
@@ -61,9 +45,9 @@ export default async function CareerAdminPage() {
                         <span className="text-right">Ações</span>
                     </div>
                     <div className="divide-y divide-white/5">
-                        {experiences.map((experience: ExperienceWithTranslations) => {
-                            const pt = experience.translations.find((translation: ExperienceTranslation) => translation.locale === "PT_BR");
-                            const en = experience.translations.find((translation: ExperienceTranslation) => translation.locale === "EN_US");
+                        {experiences.map((experience) => {
+                            const pt = experience.translations.find((translation) => translation.locale === "PT_BR");
+                            const en = experience.translations.find((translation) => translation.locale === "EN_US");
                             const title = pt?.title ?? en?.title;
 
                             return (

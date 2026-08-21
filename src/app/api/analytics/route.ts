@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { DeviceType } from "@prisma/client";
+import { type DeviceType } from "@prisma/client";
 import { analyticsEventSchema, type AnalyticsEventInput } from "@/lib/analytics/schema";
 import { prisma } from "@/lib/prisma";
 
