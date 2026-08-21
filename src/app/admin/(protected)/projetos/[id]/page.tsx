@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import type { ProjectFormValues } from "@/lib/projects/project-form";
 import { ProjectForm, ProjectFormHeading } from "@/components/admin/project-form";
+import { $Enums, ProjectTranslation } from "@prisma/client";
 
 function dateInputValue(date: Date | null) {
     return date?.toISOString().slice(0, 10) ?? "";
@@ -46,8 +47,8 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
 
     if (!project) notFound();
 
-    const pt = project.translations.find((translation) => translation.locale === "PT_BR");
-    const en = project.translations.find((translation) => translation.locale === "EN_US");
+    const pt = project.translations.find((translation: ProjectTranslation) => translation.locale === "PT_BR");
+    const en = project.translations.find((translation: ProjectTranslation) => translation.locale === "EN_US");
 
     const values: ProjectFormValues = {
         id: project.id,
@@ -73,8 +74,8 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
         responsibilitiesEn: en?.responsibilities ?? "",
         technicalChoicesEn: en?.technicalChoices ?? "",
         resultsEn: en?.results ?? "",
-        technologyIds: project.technologies.map(({ technologyId }) => technologyId),
-        projectMedia: project.media.map((item) => ({
+        technologyIds: project.technologies.map(({ technologyId }: { technologyId: string }) => technologyId),
+        projectMedia: project.media.map((item: { mediaId: string; role: $Enums.ProjectMediaRole; altPt: string | null; altEn: string | null; }) => ({
             mediaId: item.mediaId,
             role: item.role,
             altPt: item.altPt ?? "",

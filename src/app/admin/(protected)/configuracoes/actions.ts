@@ -5,6 +5,8 @@ import { requireAdmin } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { siteSettingsFormSchema, type SiteSettingsFormState } from "@/lib/settings/settings-form";
 import { redirect } from "next/navigation";
+import { $Enums, Prisma, PrismaClient } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/client";
 
 function value(formData: FormData, key: string) {
     return String(formData.get(key) ?? "");
@@ -48,13 +50,11 @@ export async function updateSiteSettingsAction(_state: SiteSettingsFormState, fo
 
     const { heroMediaId, resumePtMediaId, resumeEnMediaId, ...data } = result.data;
     const selectedIds = [...new Set([heroMediaId, resumePtMediaId, resumeEnMediaId].filter(Boolean))];
-    const media = selectedIds.length
-        ? await prisma.mediaAsset.findMany({
-              where: { id: { in: selectedIds } },
-              select: { id: true, kind: true },
-          })
-        : [];
-    const mediaById = new Map(media.map((item) => [item.id, item.kind]));
+    const media = selectedIds.length ? await prisma.mediaAsset.findMany({
+        where: { id: { in: selectedIds } },
+        select: { id: true, kind: true },
+    }) : [];
+    const mediaById = new Map(media.map((item: { id: string; kind: $Enums.MediaKind; }) => [item.id, item.kind]));
     const fieldErrors: Record<string, string[]> = {};
 
     if (heroMediaId && mediaById.get(heroMediaId) !== "IMAGE") {
@@ -71,7 +71,7 @@ export async function updateSiteSettingsAction(_state: SiteSettingsFormState, fo
         return { error: "Revise os arquivos selecionados.", fieldErrors };
     }
 
-    await prisma.$transaction(async (transaction) => {
+    await prisma.$transaction(async (transaction: Omit<PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$use" | "$extends">) => {
         await transaction.siteSettings.upsert({
             where: { id: "main" },
             update: {

@@ -12,8 +12,62 @@ import { CareerTimeline } from "@/components/public/career-timeline";
 import { TechnologyIcon } from "@/components/public/technology-icon";
 import { AnalyticsLink, AnalyticsProjectView, AnalyticsProvider } from "@/components/public/analytics-provider";
 import { absoluteUrl } from "@/lib/site";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+interface categoryInterface {
+    id: string;
+    technologies: {
+        name: string;
+        id: string;
+        iconKey: string | null;
+        color: string | null;
+    }[];
+    namePt: string;
+    nameEn: string;
+}
+
+interface technologyInterface {
+    name: string;
+    id: string;
+    iconKey: string | null;
+    color: string | null;
+}
+
+type PublishedProject = Prisma.ProjectGetPayload<{
+    select: {
+        id: true;
+        slug: true;
+        featured: true;
+        repositoryUrl: true;
+        demoUrl: true;
+        translations: {
+            select: {
+                title: true;
+                summary: true;
+            };
+        };
+        technologies: {
+            select: {
+                technology: {
+                    select: {
+                        id: true;
+                        name: true;
+                        color: true;
+                    };
+                };
+            };
+        };
+        media: {
+            select: {
+                mediaId: true;
+                altPt: true;
+                altEn: true;
+            };
+        };
+    };
+}>;
 
 const copy = {
     PT_BR: {
@@ -224,8 +278,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
     const heroImage = settings?.heroMediaId ? `/api/media/${settings.heroMediaId}` : heroBackground;
 
     const mainTechnologies = categories
-        .flatMap((category) => category.technologies)
-        .filter((technology, index, technologies) => technologies.findIndex((item) => item.id === technology.id) === index)
+        .flatMap((category: categoryInterface) => category.technologies)
+        .filter(( technology: technologyInterface, index: number, technologies: technologyInterface[]) => technologies.findIndex((item: technologyInterface) => item.id === technology.id) === index)
         .slice(0, 12);
     const publicPath = locale === "EN_US" ? "/?lang=en" : "/";
     const structuredData = {
@@ -243,7 +297,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             jobTitle: heroTitle,
             email: `mailto:${contactEmail}`,
             sameAs: [githubUrl, linkedinUrl],
-            knowsAbout: mainTechnologies.map((technology) => technology.name),
+            knowsAbout: mainTechnologies.map((technology: { name: string; id: string; iconKey: string | null; color: string | null; }) => technology.name),
             address: {
                 "@type": "PostalAddress",
                 addressLocality: settings?.location || content.location,
@@ -412,7 +466,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 
                             {projects.length ? (
                                 <div className="mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
-                                    {projects.map((project, index) => {
+                                    {projects.map((project: PublishedProject, index: number) => {
                                         const translation = project.translations[0];
                                         const cover = project.media[0];
                                         return (
@@ -447,7 +501,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
                                                     <h3 className="text-xl font-semibold tracking-tight text-white">{translation?.title || project.slug}</h3>
                                                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-400">{translation?.summary}</p>
                                                     <div className="mt-5 flex flex-wrap gap-2">
-                                                        {project.technologies.map(({ technology }) => (
+                                                        {project.technologies.map(({ technology }: { technology: { name: string; id: string; color: string | null; }}) => (
                                                             <span
                                                                 key={technology.id}
                                                                 className="rounded-full border border-white/8 bg-white/3 px-2.5 py-1 text-[11px] text-zinc-400"
@@ -509,7 +563,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
                         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                             <SectionHeading eyebrow={content.stacksEyebrow} title={content.stacksTitle} description={content.stacksDescription} />
                             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                {categories.map((category) => (
+                                {categories.map((category: categoryInterface) => (
                                     <div
                                         key={category.id}
                                         className="rounded-2xl border border-white/8 bg-white/2.5 p-5 transition hover:border-violet-500/20 hover:bg-violet-500/4"
@@ -519,7 +573,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
                                             {locale === "PT_BR" ? category.namePt : category.nameEn}
                                         </h3>
                                         <div className="mt-4 flex flex-wrap gap-2">
-                                            {category.technologies.map((technology) => (
+                                            {category.technologies.map((technology: technologyInterface) => (
                                                 <span
                                                     key={technology.id}
                                                     className="inline-flex items-center gap-2 rounded-lg border border-white/6 bg-zinc-950/50 px-3 py-2 text-xs text-zinc-300"

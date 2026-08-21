@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { type DeviceType } from "@prisma/client";
+import { DeviceType } from "@prisma/client";
 import { analyticsEventSchema, type AnalyticsEventInput } from "@/lib/analytics/schema";
 import { prisma } from "@/lib/prisma";
 
@@ -59,11 +59,13 @@ function ensureServerId(value?: string) {
 }
 
 function analyticsSecret() {
-    return process.env.LOGIN_RATE_LIMIT_SECRET || "portfolio-login-rate-limit";
+    return process.env.ANALYTICS_COOKIE_SECRET;
 }
 
 function signAnalyticsId(value: string) {
-    return createHmac("sha256", analyticsSecret()).update(value).digest("base64url");
+    const secret = analyticsSecret();
+    if (!secret) return undefined;
+    return createHmac("sha256", secret).update(value).digest("base64url");
 }
 
 function readSignedCookie(request: Request, name: string) {
@@ -74,14 +76,16 @@ function readSignedCookie(request: Request, name: string) {
     if (!value || !signature || rest.length > 0 || !ID_PATTERN.test(value)) return undefined;
 
     const expected = signAnalyticsId(value);
-    if (signature.length !== expected.length) return undefined;
+    if (!expected || signature.length !== expected.length) return undefined;
 
     return timingSafeEqual(Buffer.from(signature), Buffer.from(expected)) ? value : undefined;
 }
 
 function buildCookie(request: Request, name: string, value: string, maxAge: number) {
     const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
-    const signedValue = `${value}.${signAnalyticsId(value)}`;
+    const signature = signAnalyticsId(value);
+    if (!signature) return undefined;
+    const signedValue = `${value}.${signature}`;
     return `${name}=${encodeURIComponent(signedValue)}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${secure}`;
 }
 
@@ -235,7 +239,11 @@ export async function POST(request: Request) {
     });
 
     const response = new Response(null, { status: 204 });
-    response.headers.append("Set-Cookie", buildCookie(request, VISITOR_COOKIE, visitorId, 31_536_000));
-    response.headers.append("Set-Cookie", buildCookie(request, SESSION_COOKIE, sessionId, 1_800));
+    const visitorCookie = buildCookie(request, VISITOR_COOKIE, visitorId, 31_536_000);
+    const sessionCookie = buildCookie(request, SESSION_COOKIE, sessionId, 1_800);
+
+    if (visitorCookie) response.headers.append("Set-Cookie", visitorCookie);
+    if (sessionCookie) response.headers.append("Set-Cookie", sessionCookie);
+
     return response;
 }

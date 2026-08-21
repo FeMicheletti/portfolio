@@ -3,6 +3,17 @@ import { ArrowUpRight, BriefcaseBusiness, CircleDot, Download, Layers3, Sparkles
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { $Enums } from "@prisma/client";
+
+type projectInterface = {
+    id: string;
+    updatedAt: Date;
+    slug: string;
+    status: $Enums.ProjectStatus;
+    translations: {
+        title: string;
+    }[];
+}
 
 const statusDetails = {
     DRAFT: {
@@ -17,7 +28,7 @@ const statusDetails = {
         label: "Arquivado",
         className: "border-zinc-500/20 bg-zinc-500/10 text-zinc-400",
     },
-} as const;
+} satisfies Record<$Enums.ProjectStatus, { label: string; className: string; }>;
 
 export default async function AdminPage() {
     const thirtyDaysAgo = new Date();
@@ -44,8 +55,8 @@ export default async function AdminPage() {
             },
         }),
     ]);
-    const visitors = new Set(events.map((event) => event.visitorId)).size;
-    const downloads = events.filter((event) => event.eventType === "RESUME_DOWNLOAD").length;
+    const visitors = new Set(events.map((event: { eventType: $Enums.AnalyticsEventType; visitorId: string; }) => event.visitorId)).size;
+    const downloads = events.filter((event: { eventType: $Enums.AnalyticsEventType; visitorId: string; }) => event.eventType === "RESUME_DOWNLOAD").length;
 
     const metrics = [
         {
@@ -122,7 +133,7 @@ export default async function AdminPage() {
                     <CardContent>
                         {recentProjects.length ? (
                             <div className="divide-y divide-white/5">
-                                {recentProjects.map((project) => {
+                                {recentProjects.map((project: projectInterface) => {
                                     const status = statusDetails[project.status];
 
                                     return (

@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             },
         },
         { url: absoluteUrl("/privacidade"), changeFrequency: "yearly", priority: 0.2 },
-        ...projects.map((project) => ({
+        ...projects.map((project: { slug: string; updatedAt: Date; }) => ({
             url: absoluteUrl(`/projetos/${project.slug}`),
             lastModified: project.updatedAt,
             changeFrequency: "monthly" as const,

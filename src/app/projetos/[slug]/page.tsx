@@ -7,6 +7,14 @@ import { prisma } from "@/lib/prisma";
 import { absoluteUrl } from "@/lib/site";
 import { AnalyticsLink, AnalyticsProvider } from "@/components/public/analytics-provider";
 import { ProjectDetailTracker } from "@/components/public/project-detail-tracker";
+import { $Enums } from "@prisma/client";
+
+interface ProjectMedia  {
+    mediaId: string;
+    role: $Enums.ProjectMediaRole;
+    altPt: string | null;
+    altEn: string | null;
+}
 
 const labels = {
     PT_BR: {
@@ -140,7 +148,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
         description: content.summary,
         url: absoluteUrl(`/projetos/${slug}${languageQuery}`),
         creator: { "@type": "Person", name: "Felipe Micheletti" },
-        keywords: project.technologies.map(({ technology }) => technology.name),
+        keywords: project.technologies.map(({ technology }: { technology: { id: string; name: string; color: string | null; }}) => technology.name),
     };
     return (
         <AnalyticsProvider locale={locale}>
@@ -229,7 +237,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
                     <section className="mt-6">
                         <h2 className="text-sm font-medium text-violet-300">{copy.stack}</h2>
                         <div className="mt-4 flex flex-wrap gap-2">
-                            {project.technologies.map(({ technology }) => (
+                            {project.technologies.map(({ technology }: { technology: { id: string; name: string; color: string | null; }}) => (
                                 <span
                                     key={technology.id}
                                     className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm"
@@ -252,7 +260,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
                         <section className="mt-16">
                             <h2 className="text-2xl font-semibold">{copy.gallery}</h2>
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                {project.media.slice(1).map((media) => (
+                                {project.media.slice(1).map((media: ProjectMedia) => (
                                     <div key={media.mediaId} className="relative aspect-video overflow-hidden rounded-2xl border border-white/10">
                                         <Image
                                             src={`/api/media/${media.mediaId}`}

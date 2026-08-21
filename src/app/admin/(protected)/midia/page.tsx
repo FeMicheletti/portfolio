@@ -5,6 +5,19 @@ import { MediaUploadDialog } from "@/components/admin/media-upload-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+
+type MediaAssetWithCount = Prisma.MediaAssetGetPayload<{
+    include: {
+        _count: {
+            select: {
+                projectMedia: true;
+                resumes: true;
+                heroSettings: true;
+            };
+        };
+    };
+}>;
 
 function formatBytes(bytes: number) {
     if (bytes < 1024) return `${bytes} B`;
@@ -26,7 +39,7 @@ export default async function MediaPage() {
         },
     });
 
-    const images = mediaAssets.filter((asset) => asset.kind === "IMAGE").length;
+    const images = mediaAssets.filter((asset: MediaAssetWithCount) => asset.kind === "IMAGE").length;
     const documents = mediaAssets.length - images;
 
     return (
@@ -63,7 +76,7 @@ export default async function MediaPage() {
 
             {mediaAssets.length ? (
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {mediaAssets.map((asset, index) => {
+                    {mediaAssets.map((asset: MediaAssetWithCount, index: number) => {
                         const references = asset._count.projectMedia + asset._count.resumes + asset._count.heroSettings;
 
                         return (

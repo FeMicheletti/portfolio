@@ -8,6 +8,23 @@ import { prisma } from "@/lib/prisma";
 import { toggleCategoryVisibilityAction, toggleTechnologyVisibilityAction } from "./actions";
 import { StackCreateButtons } from "@/components/admin/stack-create-buttons";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import type { Prisma } from "@prisma/client";
+
+type TechnologyCategoryWithTechnologies = Prisma.TechnologyCategoryGetPayload<{
+    include: {
+        technologies: {
+            include: {
+                _count: {
+                    select: {
+                        projects: true;
+                    };
+                };
+            };
+        };
+    };
+}>;
+
+type TechnologyWithProjectCount = TechnologyCategoryWithTechnologies["technologies"][number];
 
 const errorMessages: Record<string, string> = {
     "category-has-technologies": "A categoria não pode ser excluída enquanto possuir tecnologias.",
@@ -25,8 +42,8 @@ export default async function StacksPage({ searchParams }: { searchParams: Promi
             },
         },
     });
-    const technologies = categories.flatMap((category) => category.technologies);
-    const categoryOptions = categories.map(({ id, namePt }) => ({ id, namePt }));
+    const technologies = categories.flatMap((category: TechnologyCategoryWithTechnologies) => category.technologies);
+    const categoryOptions = categories.map(({ id, namePt }: {id: string; namePt: string}) => ({ id, namePt }));
 
     return (
         <div className="space-y-6">
@@ -54,7 +71,7 @@ export default async function StacksPage({ searchParams }: { searchParams: Promi
                     { label: "Tecnologias", value: technologies.length },
                     {
                         label: "Stacks visíveis",
-                        value: technologies.filter((item) => item.visible).length,
+                        value: technologies.filter((item: TechnologyWithProjectCount) => item.visible).length,
                     },
                 ].map((item) => (
                     <Card key={item.label} className="border-violet-500/10 bg-zinc-900/70 py-4 ring-0">
@@ -71,7 +88,7 @@ export default async function StacksPage({ searchParams }: { searchParams: Promi
             <section className="space-y-4">
                 {categories.length ? (
                     <Accordion type="multiple" className="space-y-4">
-                        {categories.map((category) => (
+                        {categories.map((category: TechnologyCategoryWithTechnologies) => (
                             <Card key={category.id} className="border-violet-500/10 bg-zinc-900/70 ring-0">
                                 <AccordionItem value={category.id} className="border-b-0">
                                     <CardHeader className="border-b border-white/5">
@@ -148,7 +165,7 @@ export default async function StacksPage({ searchParams }: { searchParams: Promi
 
                                             {category.technologies.length ? (
                                                 <div className="divide-y divide-white/5 rounded-lg border border-white/5">
-                                                    {category.technologies.map((technology) => (
+                                                    {category.technologies.map((technology: TechnologyWithProjectCount) => (
                                                         <div key={technology.id} className="p-4">
                                                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                                 <div className="flex min-w-0 items-center gap-3">
