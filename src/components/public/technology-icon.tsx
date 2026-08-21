@@ -72,10 +72,7 @@ const icons: Record<string, IconType> = {
 };
 
 function normalizeIconKey(iconKey: string) {
-	return iconKey
-		.toLowerCase()
-		.replace(/^si|^fa/, "")
-		.replace(/[^a-z0-9]/g, "");
+	return iconKey.toLowerCase().replace(/^si|^fa/, "").replace(/[^a-z0-9]/g, "");
 }
 
 export function TechnologyIcon({ iconKey, className }: { iconKey: string | null; className?: string }) {

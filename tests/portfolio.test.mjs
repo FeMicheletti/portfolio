@@ -2,9 +2,44 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { safeDownloadFileName } from "../src/lib/media.ts";
 import { projectFormSchema } from "../src/lib/projects/project-form.ts";
-const project = { slug: "portfolio", status: "PUBLISHED", featured: true, sortOrder: 0, repositoryUrl: "", demoUrl: "", startedAt: "2026-01-01", finishedAt: "", titlePt: "Portfólio", summaryPt: "Um projeto completo para apresentar trabalhos.", problemPt: "", solutionPt: "", responsibilitiesPt: "", technicalChoicesPt: "", resultsPt: "", titleEn: "Portfolio", summaryEn: "A complete project used to present professional work.", problemEn: "", solutionEn: "", responsibilitiesEn: "", technicalChoicesEn: "", resultsEn: "", technologyIds: [], projectMedia: [] };
+const project = {
+    slug: "portfolio",
+    status: "PUBLISHED",
+    featured: true,
+    sortOrder: 0,
+    repositoryUrl: "",
+    demoUrl: "",
+    startedAt: "2026-01-01",
+    finishedAt: "",
+    titlePt: "Portfólio",
+    summaryPt: "Um projeto completo para apresentar trabalhos.",
+    problemPt: "",
+    solutionPt: "",
+    responsibilitiesPt: "",
+    technicalChoicesPt: "",
+    resultsPt: "",
+    titleEn: "Portfolio",
+    summaryEn: "A complete project used to present professional work.",
+    problemEn: "",
+    solutionEn: "",
+    responsibilitiesEn: "",
+    technicalChoicesEn: "",
+    resultsEn: "",
+    technologyIds: [],
+    projectMedia: [],
+};
 test("validates a complete bilingual project", () => assert.equal(projectFormSchema.safeParse(project).success, true));
 test("rejects an unsafe project slug", () => assert.equal(projectFormSchema.safeParse({ ...project, slug: "Invalid Slug" }).success, false));
-test("rejects duplicated project media", () => assert.equal(projectFormSchema.safeParse({ ...project, projectMedia: [{ mediaId: "1", role: "COVER", altPt: "", altEn: "" }, { mediaId: "1", role: "GALLERY", altPt: "", altEn: "" }] }).success, false));
+test("rejects duplicated project media", () =>
+    assert.equal(
+        projectFormSchema.safeParse({
+            ...project,
+            projectMedia: [
+                { mediaId: "1", role: "COVER", altPt: "", altEn: "" },
+                { mediaId: "1", role: "GALLERY", altPt: "", altEn: "" },
+            ],
+        }).success,
+        false,
+    ));
 test("keeps the configured resume filename", () => assert.equal(safeDownloadFileName("Felipe-Micheletti-CV.pdf", "resume.pdf"), "Felipe-Micheletti-CV.pdf"));
 test("removes header injection from media filenames", () => assert.equal(safeDownloadFileName("resume.pdf\r\nX-Test", "resume.pdf"), "resume.pdfX-Test"));
